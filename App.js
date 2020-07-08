@@ -1,39 +1,37 @@
 import React, {Component} from 'react';
 import {View, Text, TouchableOpacity} from 'react-native';
+import {Button, h1Style} from 'react-native-elements';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 class App extends Component {
-  getTwoNonConsecutiveDays = () => {
-    const days = {
-      Day1: [],
-      Day2: [],
-      Day3: [],
-      Day4: [],
-      Day5: [],
-      Day6: [],
-      Day7: [],
-      Day8: [],
-      Day9: [],
-      Day10: [],
+  constructor(props) {
+    super(props);
+    this.state = {
+      nickname: null,
     };
-    //mock values
+  }
+
+  getTwoNonConsecutiveDays = () => {
+    const days = require('./days.json');
+    //Workers
     const workers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-    //assign a worker to each day at random;
-    let partA = (workers, days) => {
-      //copy mady for push mutation
+    //assign a random worker for each day
+    let functionA = (workers, days) => {
+      //copy made for push mutation
       const daysCopy = {...days};
       //copy made for splice mutation
       const workersCopy = [...workers];
-      //a worker is selected at random, then spliced from the worker array to prevent being selected again
+      //a random worker is selected, then spliced from the worker array to prevent having duplicates
       Object.keys(daysCopy).forEach((key) => {
         const random = Math.floor(Math.random() * workersCopy.length);
         daysCopy[key] = [workersCopy.splice(random, 1)[0]];
       });
-      return partB(workers, daysCopy);
+      return functionB(workers, daysCopy);
     };
 
     //determine what workers are available for each remaining slot
-    let partB = (workers, days) => {
+    let functionB = (workers, days) => {
       //create an object map of available workers
       const workerMap = {};
       //for each day check who the current, previous, and next day's worker is, then add all others to object map
@@ -51,11 +49,11 @@ class App extends Component {
         workerMap[key] = allowed;
       });
       //pass daysCopy and workerMap to final part
-      return partC(days, workerMap);
+      return functionC(days, workerMap);
     };
 
-    //randomly assign remaining workers
-    let partC = (days, workerMap) => {
+    //assign randomly workers
+    let functionC = (days, workerMap) => {
       //create copy for push mutation
       const daysCopy = {...days};
       //create copy for delete mutation
@@ -79,7 +77,7 @@ class App extends Component {
         const selection = options[random];
 
         //if the assignment fails, it will recursively call itself; this occurs about 2% of the time
-        if (typeof selection === 'undefined') return partC(days, workerMap);
+        if (typeof selection === 'undefined') return functionC(days, workerMap);
         //otherwise push the selection as the second worker for the day
         daysCopy[shortestKey] = [...daysCopy[shortestKey], selection];
         //remove that worker as an available option for all other days
@@ -94,16 +92,23 @@ class App extends Component {
       return daysCopy;
     };
 
-  return( <Text>{JSON.stringify(partA(workers, days))}</Text> );
+    return this.setState({nickname: JSON.stringify(functionA(workers, days))});
   };
 
   render() {
+    const {nickname} = this.state;
+
     return (
       <View>
         <View>
-    <TouchableOpacity onPress={this.getTwoNonConsecutiveDays}><Text>BUTTON</Text></TouchableOpacity>
-          <View><Text>{this.getTwoNonConsecutiveDays()}</Text></View>
-       <View>{this.getTwoNonConsecutiveDays}</View>
+          <Button
+            title="Generate wheel of fate rota"
+            type="outline"
+            onPress={this.getTwoNonConsecutiveDays}></Button>
+
+          <View>
+            <Text h1Style>{nickname}</Text >
+          </View>
         </View>
       </View>
     );
